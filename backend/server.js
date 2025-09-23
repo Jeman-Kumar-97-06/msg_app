@@ -12,3 +12,14 @@ const io       = new Server(server,{
     }
 });
 
+//When a client connects : 
+io.on('connection',(socket)=>{
+    console.log('A user connected : '+ socket._id);
+
+    //Listen for events from client : 
+    socket.on('chat message',(msg) => {
+        console.log('Message' + msg);
+        //Send to all clients : 
+        io.emit('chat message',msg)
+    })
+})
