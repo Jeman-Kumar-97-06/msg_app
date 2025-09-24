@@ -67,7 +67,7 @@ io.use((socket,next)=>{
     //Try to verify the JWT:
     try {
         const payload = jwt.verify(token,process.env.SEC)
-        //Attach the 'user' object to the socket.
+        //Attach the 'user' object to the socket. format : 
         socket.user   = payload
         //Go the the next middleware ie., the 'io.on(connection,.....)' shit you see below after this function
         return next();
@@ -80,10 +80,29 @@ io.use((socket,next)=>{
 io.on('connection',(socket)=>{
     //Console log that socket has connected and log his/her id and username:
     console.log('Socket connected',socket.id,'user: ',socket.user.username);
-    //Notify Everyone Connected:
-    socket.broadcast.emit('user:joined',{username:socket.user.username,id:socket.id});
-    //Listen for chat messages sent by any connected socket/ user:
+
+    //Auto join a default room : 
+    const defaultRoom = 'general';
+    socket.join(defaultRoom);
+
+    //Add user to in-memory room set:
+    let set = roomUsers.get(defaultRoom);
     
+    //If the defaultRoom doesn't exist in in-memory roomUsers map, 
+    // then, create a 'defaultRoom' value inside 'roomUsers' and set it to an empty set:
+    if (!set) {
+        set = new Set();
+        roomUsers.set(defaultRoom,set);
+    }
+
+    set.add({socketId: socket.id, username: socket.user.username}); //* Remember we already attached 'user' to 'socket'.
+
+    
+
+    //Join a room : 
+    socket.on('joinRoom',(roomName,cb)=>{
+        try 
+    })
 })
 
 
