@@ -97,7 +97,8 @@ io.on('connection',(socket)=>{
 
     set.add({socketId: socket.id, username: socket.user.username}); //* Remember we already attached 'user' to 'socket'.
 
-    
+    //Notify the defaultRoom that a user has joined : 
+    socket.to(defaultRoom).emit('chat:message',{user:"Server",text:`${socket.user.username} joined ${defaultRoom}`,createdAt: new Date().toISOString()});
 
     //Join a room : 
     socket.on('joinRoom',(roomName,cb)=>{
