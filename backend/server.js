@@ -160,19 +160,77 @@ io.on('connection',(socket)=>{
             if (set) {
                 //Remove the socket/ user that sent the 'leaveRoom' trigger:
                 const newSet = new Set(Array.from(set).filter(obj => obj.socketId !== socket.id));
-                if (newSet.size > 0) {
-                    roomUsers.set(roomName, newSet);
-                } else {
+                if (newSet.size > 0) { //If the users are not zero update the set.
+                    roomUsers.set(roomName, newSet); 
+                } else { //If the users are zero use delete the room
                     roomUsers.delete(roomName);
                 }
             }
+            socket.to(roomName).emit('chat:message',{
+                user:'Server',
+                text:`${socket.user.username} left ${roomName}`,
+                createdAt: new Date().toISOString()
+            })
+            if (typeof cb === 'function') {
+                cb({ok:true,room:roomName})
+            }
+            broadcaseRoomUserlist(roomName);
         } catch (error) {
+            console.error('leaveRoom error',error);
+            if (typeof cb == 'function') {
+                cb({ok:false,error:'leave failed'})
+            }
+        }
+    });
+
+    //Chat message -> expects {room,text}:
+    socket.on('chat:message',(payload)=>{
+        try {
+            const room = String((payload && payload.room) || 'general');
+            const text = String((payload && payload.text) || '').trim();
+
+            //End this shit if no message is sent:
+            if (!text) {
+                return;
+            }
+
+            const msg = {
+                user : socket.user.username,
+                text,
+                createdAt: new Date().toISOString()
+            }
+
+            //Emit the above msg obj to room only 
+            io.to(room).emit('chat:message',msg);
+        } catch (error){
             pass
         }
     })
 
+    //Handle Disconnect : remove from all rooms tracked:
+    socket.on('disconnect',(reason) => {
+        console.log('Socket disconnected:',socket.id,'reason: ',reason);
+        //Remove socket from all room sets : 
+        for (const [room,set] of roomUsers.entries()) {
+            const newSet = new Set(Array.from(set).filter(obj=>obj.socketId !== socket.id));
+            if (newSet.size>0) {
+                roomUsers.set(room,newSet);
+            } else {
+                roomUsers.delete(room);
+            }
+            broadcaseRoomUserlist(room);
+        }
+    })
+});
 
-})
+
+mongoose.connect(process.env.MONGOURL).then(()=>{
+    server.listen(process.env.PORT,()=>{
+            console.log("Server listening on 4000")
+        })
+}).catch(error=>{console.log(
+    'Server connection error:',error
+)})
 
 
 
