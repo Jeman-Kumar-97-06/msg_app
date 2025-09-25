@@ -97,12 +97,23 @@ io.on('connection',(socket)=>{
 
     set.add({socketId: socket.id, username: socket.user.username}); //* Remember we already attached 'user' to 'socket'.
 
-    //Notify the defaultRoom that a user has joined : 
-    socket.to(defaultRoom).emit('chat:message',{user:"Server",text:`${socket.user.username} joined ${defaultRoom}`,createdAt: new Date().toISOString()});
+    //Notify the defaultRoom that a user has joined : The following file will send everyone in 'defaultRoom' except the guy that just joined:
+    socket.to(defaultRoom).emit('chat:message',{
+        user:"Server", //This line tells the client that the event was from 'Server' not any 'user'.
+        text:`${socket.user.username} joined ${defaultRoom}`,
+        createdAt: new Date().toISOString()
+    });
 
     //Join a room : 
     socket.on('joinRoom',(roomName,cb)=>{
-        try 
+        try {
+            //First see if the roomName exists. If not send the user to 'general' room
+            roomName = String(roomName || 'general');
+            //Join the room:
+            socket.join(roomName);
+            
+            let set
+        }
     })
 })
 
