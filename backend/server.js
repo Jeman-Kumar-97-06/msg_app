@@ -157,6 +157,15 @@ io.on('connection',(socket)=>{
 
             //remove from the in-memory set:
             const set = roomUsers.get(roomName);
+            if (set) {
+                //Remove the socket/ user that sent the 'leaveRoom' trigger:
+                const newSet = new Set(Array.from(set).filter(obj => obj.socketId !== socket.id));
+                if (newSet.size > 0) {
+                    roomUsers.set(roomName, newSet);
+                } else {
+                    roomUsers.delete(roomName);
+                }
+            }
         } catch (error) {
             pass
         }
