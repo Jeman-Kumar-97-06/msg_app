@@ -77,6 +77,7 @@ io.use((socket,next)=>{
     }
 });
 
+//Tells everything you can do on 'connection':
 io.on('connection',(socket)=>{
     //Console log that socket has connected and log his/her id and username:
     console.log('Socket connected',socket.id,'user: ',socket.user.username);
@@ -111,8 +112,17 @@ io.on('connection',(socket)=>{
             roomName = String(roomName || 'general');
             //Join the room:
             socket.join(roomName);
+
+            //Add user to in-memory room set:
+            //See if the room with roomName exists in roomUsers:
+            let set = roomUsers.get(roomName);
+            //If not create one : 
+            if (!set) {
+                set = new Set();
+                roomUsers.set(roomName,set);
+            }
+
             
-            let set
         }
     })
 })
