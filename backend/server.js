@@ -2,6 +2,7 @@ const path     = require('path');
 const express  = require('express');
 const http     = require('http');
 const mongoose = require('mongoose');
+const cors     = require('cors');
 
 require('dotenv').config();
 
@@ -105,7 +106,7 @@ io.on('connection',(socket)=>{
         createdAt: new Date().toISOString()
     });
 
-    //Join a room : 
+    //Join a room : This function is executed when 'joinRoom' event triggered by the client:
     socket.on('joinRoom',(roomName,cb)=>{
         try {
             //First see if the roomName exists. If not send the user to 'general' room
@@ -122,9 +123,46 @@ io.on('connection',(socket)=>{
                 roomUsers.set(roomName,set);
             }
 
-            
+            //When values in sets are objects js can't compare them, they are only compared by reference. So, even if you try to save a duplicate it will 
+            //save it as a new value. Bcoz the memory references are not the same even if the values are same. So to avoid duplicates to join a room we
+            //need to save the info on user as a string:
+            set.add({socket:id})
+
+            //Notify room about joining of the user:
+            socket.to(roomName).emit('chat:message',{
+                user : 'Server',
+                text : `${socket.user.username} joined ${roomName}`,
+                createdAt: new Date().toISOString()
+            });
+            //send success acknowledgment : First, make sure the client sent a function as 'callback' not a string or any other shit:
+            if (typeof cb == 'function') {
+                cb({ok:true,room:roomName});
+            }
+            //Now emit the updated userlist to others in the room : 
+            broadcaseRoomUserlist(roomName);
+        }
+        catch (err) {
+            console.error('joinRoom error',err);
+            if (typeof cb === 'function') {
+                cb({ok:false,error:'join failed'})
+            }
         }
     })
+
+    //Leaving a room : This function is executed when 'leaveRoom' event is triggered by the client : 
+    socket.on('leaveRoom',(roomName,cb) => {
+        try {
+            roomName = String(roomName || 'general');
+            socket.leave(roomName);
+
+            //remove from the in-memory set:
+            const set = roomUsers.get(roomName);
+        } catch (error) {
+            pass
+        }
+    })
+
+
 })
 
 
