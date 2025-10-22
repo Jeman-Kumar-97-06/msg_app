@@ -1,0 +1,23 @@
+{
+  "name": "msg_app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jeman-Kumar-97-06/msg_app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Jeman-Kumar-97-06/msg_app/issues"
+  },
+  "homepage": "https://github.com/Jeman-Kumar-97-06/msg_app#readme",
+  "dependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

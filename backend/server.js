@@ -38,7 +38,6 @@ app.use(cors()); //Used to escape cors errors
 app.use(express.json()); //Enables parsing of incoming request bodies in JSON format.
 
 
-
 const {Server} = require('socket.io');
 
 //Initiate SocketIO:
